@@ -1,0 +1,117 @@
+---
+title: "First Assignment"
+author: "Arnau Abella"
+date: "03/03/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+a. Analyze the distribution of "X100m" according to the type of competition by using boxplot. Write your conclusion.
+
+```{r echo = T, results = 'hide'}
+decathlon <- read.csv( "/home/arnau/MIRI/smde/hw1/decathlon.csv", header = TRUE, sep = ",")
+dim(decathlon)
+head(decathlon)
+summary(decathlon)
+boxplot(X100m~Competition, ylab="x100m", xlab="competition", data=decathlon)
+decastar<-which(decathlon$Competition=="Decastar")
+olympic <-which(decathlon$Competition=="OlympicG")
+plot(density(decathlon$X100m[decastar]),main="Density curves of X100m for Decastar and OlympicG", xlim=c(10,12), ylim=c(0, 2))
+lines(density(decathlon$X100m[olympic]),col=2)
+```
+
+The discret random variable _X100m_ follows a normal distribution by the shape of its density function.
+
+Both distributions are very similar but the medians do not coincide. 
+
+Notice that we have less samples from Decaster (13) than from OlympicG (28) so we need to make some probabilistic analysis before refusing that the medians are equals.
+
+From the statistics, it is easy to see that, in average, the runners from OlympicG are one second faster than the ones from Decaster.
+
+\newpage
+
+b. Create a new categorical variable with two categories from the variable "X100m" by using 11 seconds as the cut-off point. Make a cross table from the new categorical variable and the "Competition". Are these two variables independent? Write your conclusion by checking marginal probabilities and test the independency of two variables by using Chi-Square test.
+
+```{r}
+decathlon$X100m_11s<- cut(decathlon$X100m, c(11,0 , 12.0))
+levels(decathlon$X100m_11s)<-c("< 11s","> 11s")
+tab<-table(decathlon$X100m_11s, decathlon$Competition)
+tab
+prop.table(tab)
+chisq.test(tab)
+```
+
+As the p-value 0.0052 is smaller than the .05 significance level, we can reject the null hypothesis that running 100 meters in less/more than 11 seconds is independent of the kind of competition.
+
+Are these two variables independent? We can conclude from the $\chi^2$ test that they are not.
+
+\newpage
+
+c. Visualize the distribution of quantitative variables by using proper graph. Which of these variables follows a Normal distribution?
+
+All quantitative variables follow a Normal distribution except for **Rank** and **Points**. Here are some sample plots:
+
+```{r}
+plot(density(decathlon$X100m), main="Probability density function: X100m")
+plot(density(decathlon$X400m), main="Probability density function: X400m")
+plot(density(decathlon$Javeline), main="Probability density function: Javeline")
+```
+
+To check that Rank and Position do not follow a Normal distribution we used qqnorm and Shapiro-Wilk normality test.
+
+```{r}
+plot(density(decathlon$Rank), main="Probability density function: X100m")
+qqnorm(decathlon$Rank); qqline(decathlon$Rank, col = 2)
+shapiro.test(decathlon$Rank)
+```
+
+\newpage
+
+d. Generate three Normally distributed random variables of length 50. Two of them should have the same mean, different standard deviations while the third one has a different mean but the same standard deviation with the first distribution. Use t test to compare mean differences between three variables.
+
+```{r echo = T, results = 'hide'}
+s1<-rnorm(50, mean=25,sd=4)
+s2<-rnorm(50, mean=25,sd=8)
+s3<-rnorm(50, mean=35,sd=4)
+
+plot(density(s1),xlim=c(0,50),ylim=c(0,0.13), main="Three different Normal distributed random variables")
+lines(density(s2),col=2)
+lines(density(s3),col=3)
+```
+
+Let's compare the mean difference using t-test:
+
+```{r}
+t.test(s1, s2, var.equal=TRUE)
+```
+
+We can't refuse that the mean of **s1** and **s2** are different because the p-value 0.56 is greater than $\alpha$. However, we can refuse this for **s1** and **s3** as expected because the p-value is way slower than $\alpha$.
+
+```{r}
+t.test(s1, s3, var.equal=TRUE)
+```
+
+Additionaly, we can test the variance of the distributions. The distributions **s1** and **s2** have differente variance as expected.
+
+```{r}
+var.test(s1, s2, var.equal=TRUE)
+```
+
+\newpage
+
+e. Test if there is a difference between two type of competitions according to the variables "X100m" and "X400m" by using t test.
+
+On the _X100m_ we can refuse the null hypothesis $H_0$ because the p-value 0.00407 is smaller than $\alpha$. So we can state with 95% of confidence that there is difference in average in the times for the 100 meters race dependening on the competition.
+
+```{r}
+t.test(X100m ~ Competition, data = decathlon)
+```
+
+On the _X400m_ we can't refuse the null hypothesis $H_0$ because the p-value 0.9543 is greater than $\alpha$. So there is no significative effidence that the average time on the 400 meters race is different depending on the competition.
+
+```{r}
+t.test(X400m ~ Competition, data = decathlon)
+```
