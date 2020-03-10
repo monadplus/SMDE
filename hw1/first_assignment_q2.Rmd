@@ -1,0 +1,177 @@
+---
+title: "Second Question: ANOVA"
+author: "Arnau Abella"
+date: "10/03/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+root = "/home/arnau/MIRI/SMDE/hw1/"
+```
+
+### Anova Test
+
+a) Generate three population using your own algorithm.
+
+In order to generate the three normal populations I used the following [Haskell script](./generate-random-samples.hs)
+
+```haskell
+stdDev :: Double
+stdDev = 1.0
+
+main = do
+  IO.withFile "normal.csv" IO.WriteMode $
+    \handle -> do
+      vss <- traverse (normalV 10000) [0.0, 0.0, 10.0]
+      forM_ vss $ \vs ->
+        let bs = Csv.encode [GV.toList vs]
+        in LBS.hPut handle bs
+  where
+    normalV n mean =
+      withSystemRandom $
+        \(gen::GenST s) -> normalVector mean stdDev gen n :: ST s (UV.Vector Double)
+
+normalVector :: (PrimMonad m, Vector v Double)
+             => Double            -- ^ Mean
+             -> Double            -- ^ Standard deviation
+             -> Gen (PrimState m)
+             -> Int               -- ^ vector length
+             -> m (v Double)
+normalVector mean std gen n =
+  GV.replicateM n (MWCD.normal mean std gen)
+
+standardVector :: (PrimMonad m, Vector v Double)
+             => Gen (PrimState m)
+             -> Int               -- ^ vector length
+             -> m (v Double)
+standardVector = normalVector 0.0 1.0
+```
+
+b) Analyze using an ANOVA if these three populations are different (or not) depending on the parameter selected.
+
+```{r}
+# 30,000 values in total.
+v <- sapply(read.csv( paste(root, 'normal.csv', sep='/'), header = FALSE, sep = ","), as.numeric)
+v1 <- v[1, ] # 10,000 values
+v2 <- v[2, ] # 10,000 values
+v3 <- v[3, ] # 10,000 values
+
+plot(density(v1),xlim=c(-4,14),main="Three Normal distributions with distinct means")
+lines(density(v2),col=2)
+lines(density(v3),col=3)
+
+v1n=data.frame(x1=v1, x2="v1")
+v2n=data.frame(x1=v2, x2="v2")
+v3n=data.frame(x1=v3, x2="v3")
+
+library(RcmdrMisc)
+# We create a single data frame
+data=mergeRows(v1n, v2n, common.only=FALSE)
+data=mergeRows(as.data.frame(data), v3n, common.only=FALSE)
+
+AnovaModel.1 <- aov(x1 ~ x2, data=data)
+summary(AnovaModel.1) # Pr(>F) = p-value
+Boxplot(x1~x2,data=data,id=FALSE)
+```
+
+From the output of the ANOVA test, we can see that the PR(>F) is smaller than the p-value so we __can__ refuse the null hypothesis that there is no significant difference between means of the different groups.
+
+\newpage
+
+### Red and White Wine Quality
+
+We want to analyze if in both (type or quality) affects some properties of the wine. After combining the two datasets (one for red wines and one for white wines), you should create two variables: "type" that identifies if the wine is red or white, and wine quality categorized in three groups: <5 (low), 5-6(medium) and >6 (high). Once you complete preprocessing steps, please answers the following questions applying appropriate statistical techniques:
+
+```{r}
+red  <-read.csv2(paste(root, 'winequality-red.csv', sep='/'), dec=".") # 1599 x 12
+white<-read.csv2(paste(root, 'winequality-white.csv', sep='/'), dec=".") # 4898 x 12
+
+# Combine the rows
+winequal<-rbind(red,white)
+
+# Categorical Variable: type
+winequal$type<-as.factor(rep(c(1,2),c(nrow(red),nrow(white))))
+levels(winequal$type)<-c("red","white")
+summary(winequal$type)
+
+# Categorical Variable: category (low, medium, high)
+winequal$category<- cut(winequal$quality,c(1,5,6,10))
+summary(winequal$category)
+```
+
+Before answer the questions, we are going to check if the assumptions of ANOVA are fulfilled for each numerical variable.
+
+```{r}
+library(lmtest)
+anova1 <- aov(alcohol ~ quality, data=winequal)
+```
+
+**Independent obs.**
+
+```{r}
+# Durbin Watson, Ho = autocorrelation of the disturbances is 0.
+dwtest(anova1, alternative ="two.sided")
+```
+
+**Normality**
+
+```{r}
+#Shapiro test (Normality)
+# shapiro.test(residuals(anova1))
+```
+
+**Homogeneity**
+
+```{r}
+#Breusch Pagan test (Variance equality)
+bptest(anova1) 
+# leveneTest(alcohol~quality, data=winequal)
+```
+
+a) Which of the chemical properties influence the quality of the wines?
+
+```{r}
+for (i in 1:11){
+  print(colnames(winequal)[i])
+  print(summary(aov(winequal[,i]~category,data=winequal)))
+}
+```
+
+All properties except for the pH affect the quality of the wine.
+
+b) Which of the chemical properties are related with type of the wines ?
+
+```{r}
+for (i in 1:11){
+  print(colnames(winequal)[i])
+  print(summary(aov(winequal[,i]~type,data=winequal)))
+}
+```
+
+From the ANOVA test, all p-values of each property are below the acceptance area, hence all properties are directly correlated with the type of wine.
+
+c) How does type and quality of wines affect (separately and together) the percentage of alcohol present in the wine ?
+
+```{r}
+print(summary(aov(winequal$alcohol~category,data=winequal)))
+print(summary(aov(winequal$alcohol~type,data=winequal)))
+```
+
+For the ANOVA test, the p-value for the category $<2e-16$ is smaller than the p-value for the type $0.00787$ so the **category** has a bigger impact on the quantity of alcohol of the wine.
+
+```{r}
+print(summary(aov(winequal$alcohol~category+type,data=winequal)))
+```
+
+The two-way ANOVA shows that the alcohol mean of the wine is still affected by both the category and the type, altough the category has a greater impact on the amount of alcohol of the wine.
+
+d) Detail the results of a two-way ANOVA considering as dependent variable "fixed acidity", and independent variable "type" and "quality".
+
+```{r}
+print(summary(aov(winequal$fixed.acidity~category+type,data=winequal)))
+```
+
+From the two-way ANOVA table we can conclude that both category and type are statistically significant. The category is the most significant factor variable. These results would lead us to believe that changing the category or the quality of the wine, will impact significantly the mean of the acidity level.
+
+Not the above fitted model is called _additive model_. It makes an assumption that the two factor variables are independent.

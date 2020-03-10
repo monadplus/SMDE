@@ -41,12 +41,10 @@ levels(decathlon$X100m_11s)<-c("< 11s","> 11s")
 tab<-table(decathlon$X100m_11s, decathlon$Competition)
 tab
 prop.table(tab)
-chisq.test(tab)
+chisq.test(tab) # Independent and normally
 ```
 
-As the p-value 0.0052 is smaller than the .05 significance level, we can reject the null hypothesis that running 100 meters in less/more than 11 seconds is independent of the kind of competition.
-
-Are these two variables independent? We can conclude from the $\chi^2$ test that they are not.
+As the p-value 0.0052 from $\chi^2$ is smaller than the .05 significance level, we can reject the null hypothesis that running 100 meters in less/more than 11 seconds is independent of the kind of competition.
 
 \newpage
 
@@ -102,15 +100,15 @@ var.test(s1, s2, var.equal=TRUE)
 
 \newpage
 
-e. Test if there is a difference between two type of competitions according to the variables "X100m" and "X400m" by using t test.
+e. Test if there is a difference between two type of competitions according to the variables "X100m" and "X400m" by using t-test.
 
-On the _X100m_ we can refuse the null hypothesis $H_0$ because the p-value 0.00407 is smaller than $\alpha$. So we can state with 95% of confidence that there is difference in average in the times for the 100 meters race dependening on the competition.
+After performing the Student's t-test on the _X100m_, we **can** refuse the null hypothesis $H_0$ that there is no significant difference in the means because the p-value $0.00407$ is smaller than $\alpha$. So we can state with 95% of confidence that there is a statistical difference in the times for the 100 meters race dependening on the competition type.
 
 ```{r}
 t.test(X100m ~ Competition, data = decathlon)
 ```
 
-On the _X400m_ we can't refuse the null hypothesis $H_0$ because the p-value 0.9543 is greater than $\alpha$. So there is no significative effidence that the average time on the 400 meters race is different depending on the competition.
+After performing the Student's t-test on the _X400m_, we **can't** refuse the null hypothesis $H_0$ that there is no significant difference in the means because the p-value $0.9543$ is greater than $\alpha$. So there is no significative evidence that the mean time on the 400 meters race is different depending on the competition type.
 
 ```{r}
 t.test(X400m ~ Competition, data = decathlon)

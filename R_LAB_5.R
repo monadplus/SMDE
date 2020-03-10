@@ -103,7 +103,7 @@ bartlett.test(Intensity~Soil, data=wine)
 # Cross-product comparison of median/variance.
 
 # The most used are:
-# * Turkey's HSD
+# * Tukey's HSD
 # * Bonferroni t-test
 
 ### Tukey's HSD
@@ -136,13 +136,17 @@ out
 duncan.test(model3, "Soil", console=TRUE)
 scheffe.test(model3, "Soil", console=TRUE)
 
-####### Two-Way ANOVA #####
+####### Two-Way ANOVA
+
+# Two independent categorical variables 
+# Enter both categories at the same time into the model.
 
 model5<-aov(Intensity~Soil+Label,data=wine)
-summary(model5)
+summary(model5) # Label does not affect the Intensity
 
 head(wine)
 
+# Compare each numeric variable to the two-way anova for Soil+Label
 for (i in 3:31){
   print(colnames(wine)[i])
   print(summary(aov(wine[,i]~Soil+Label,data=wine)))
@@ -151,9 +155,10 @@ for (i in 3:31){
 model6<-aov(Odor.Intensity~Soil+Label,data=wine)
 summary(model6)
 
-dwtest(model6)
-shapiro.test(wine$Odor.Intensity)
+# Validate assumptions
 
-leveneTest(Odor.Intensity~Soil,data=wine)
-leveneTest(Odor.Intensity~Label,data=wine)
+dwtest(model6) # independent observations
+shapiro.test(wine$Odor.Intensity) # Normality
 
+leveneTest(Odor.Intensity~Soil,data=wine) # Variance
+leveneTest(Odor.Intensity~Label,data=wine) # Variance
