@@ -1,5 +1,5 @@
 ---
-title: "First Assignment"
+title: "First Question: Visualization, Chi-Square and t-test"
 author: "Arnau Abella"
 date: "03/03/2020"
 output: pdf_document
@@ -12,7 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 a. Analyze the distribution of "X100m" according to the type of competition by using boxplot. Write your conclusion.
 
 ```{r echo = T, results = 'hide'}
-decathlon <- read.csv( "/home/arnau/MIRI/smde/hw1/decathlon.csv", header = TRUE, sep = ",")
+decathlon <- read.csv( "/home/arnau/MIRI/SMDE/hw1/decathlon.csv", header = TRUE, sep = ",")
 dim(decathlon)
 head(decathlon)
 summary(decathlon)
