@@ -143,4 +143,19 @@ t.test(cars$speed~cars$dist_cat,var.equal=TRUE) # Means are not the same
 plot(cars$speed~cars$dist_cat)
 
 
+# 20 coin flips: 14 head. 
+# 
+# Is the coin fair ? H_0 = the coin is fair = P(X) = ~0.5
+# 
+# A coin flip follows a binomial distribution
+#
+# Right-tailed test: What is the chance of a fair coin landing at least 14 times out of 20 flips ?
+# p-value = P(X=14)+...+P(X=20) where X = number of heads
+#         = 0.058 
+# two-tailed p-value (deviation can favour head or tail)
+# Because Binomial is symmetric two-tailed p-value = 2*min(P(>=14), P(<=14)) = 2*0.058 = 0.115
+# Confidence interval 95%, α = 0.05 (level of significance)
+# As p-value is grater than the level of significance, we can't refuse the null hypothesis.
+binom.test(x=14,n=20,p=0.5,alternative="two.sided",conf.level=0.95)
 
+# Notice that if instead of 14 heads, we had 15 heads, the p-value = 0.04139 and we could refuse the null hypothesis = coin is not fair
