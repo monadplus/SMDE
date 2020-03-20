@@ -170,7 +170,6 @@ scatter.smooth(x=heigth, y=weight, main="Weight ~ Heigth")
 
 ## Linear model
 linearMod <- lm(weight~heigth) # lm(w~h, data=heigths)
-linearMod
 summary(linearMod)
 
 ## Linera regression
