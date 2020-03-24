@@ -2,7 +2,7 @@
 
 # Data set
 summary(cars)
-hhead(cars)
+head(cars)
 
 # Linear model
 cars.lm <- lm(dist ~ speed, data=cars) # Distance respect to speed, y = distance
@@ -12,7 +12,8 @@ summary(cars.lm)
 # Is there a relation between speed and distance ?
 
 # Draw a scatterplot
-with(cars, scatter.smooth(speed, dist))
+# with(cars, scatter.smooth(speed, dist))
+scatterplot(dist~speed, regLine=lm, smooth=FALSE, data=cars)
 
 ### Test the Hypotheses
 

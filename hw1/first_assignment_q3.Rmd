@@ -1,0 +1,142 @@
+---
+title: "Third Question: Define a linear model for an athlete in the 1500m"
+author: "Arnau Abella"
+date: "24/03/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Picking the best model
+
+**What is the linear expression that better predicts the behaviour of an athlete of 1500m ?**
+
+```{r echo = T, results = 'hide'}
+# Load the dataset and preprocess it.
+library(FactoMineR)
+data(decathlon)
+head(decathlon)
+colnames(decathlon)[c(1,5,6,10)]<-c("x100m","x400m","x110m.hurdle","x1500m")
+colnames(decathlon)
+```
+
+Let's construct some simple linear regression models and check which better predicts the behaviour:
+
+```{r}
+reg1<-lm(x1500m~x100m,data=decathlon)
+summary(reg1)
+
+reg2<-lm(x1500m~x110m.hurdle,data=decathlon)
+summary(reg2)
+
+reg3<-lm(x1500m~x400m,data=decathlon)
+summary(reg3)
+```
+
+We are going to use the third model **x1500~x400m** because it has smaller residual standard error, larger $R^2$ (better fit) and better F-statistic.
+
+### Correlation Tests
+
+Only in the third model the coefficient of correlation 0.408 is significant (p < 0.05)
+```{r}
+# In all cases the coefficient of correlation is 0.816 and significant (p=0.002).
+cor.test(decathlon$x100m       , decathlon$x1500m)
+cor.test(decathlon$x110m.hurdle, decathlon$x1500m)
+cor.test(decathlon$x400m       , decathlon$x1500m)
+```
+
+\newpage
+
+### Scatterplots
+
+The first and the second model are totally scattered but on the third model we can apprecciate a positive correlation.
+
+```{r echo = T, results = 'hide'}
+op<-par(mfrow=c(2,2))
+plot(x1500m~x100m       , data=decathlon)
+plot(x1500m~x110m.hurdle, data=decathlon)
+plot(x1500m~x400m       , data=decathlon)
+par(op)
+```
+
+\newpage
+
+## Testing assumptions of the linear model
+
+```{r echo = T, results = 'hide'}
+regModel <-lm(x1500m~x400m, data=decathlon)
+summary(regModel)
+```
+
+### Normality of the Error Term
+
+```{r}
+# QQPlot
+qqnorm(residuals(regModel)) 
+# Since the values are taking part close to the diagonal,
+#   the distribution is approximately normal.
+
+# Histogram
+hist(residuals(regModel)) 
+# It is approximately normal (skew to the left).
+
+# Shapiro Wilks Test
+shapiro.test(residuals(regModel)) 
+# The error term doesn't follows a Normal distribution. (p<0.05)
+# This should be taken into consideration.
+```
+
+### Homogenity of Variance
+
+```{r}
+# Residual Analysis #
+plot(residuals(regModel)) 
+# Residuals have a rectangular pattern around the zero mean.
+# There is no violation of this assumption.
+
+##Breusch Pagan Test
+library(lmtest)
+bptest(regModel) 
+# H0 is accepted (p>0.05). Hence, the homogenity of variances is provided.
+```
+
+### The independence of errors
+
+```{r}
+# Durbin-Watson Test
+dwtest(regModel, alternative = "two.sided") 
+# There is not an autocorrelaiton in the data set (p>0.05).
+# The errors/observations are independent.
+```
+
+\newpage 
+
+## Predicting new values
+
+**Is the model accurate ? What do you expect ?**
+
+The F test shows that the model is significant (p<0.05).
+
+```{r}
+summary(regModel)
+
+confint(regModel)
+# The null hypothesis is H0:B1=0.
+# If the confidence interval includes 0 => we accept the null hypothesis.
+#
+# (1.137685, 7.122619) the confidence intervals of the parameters does not include 0.
+#      => The null hypothesis B0=0 and B1=0 are rejected.
+#
+# Therefore the coefficients are significant.
+```
+
+Let's predict the behaviour of an athlete in the 1500m that runned the 400m in 55.5 seconds.
+
+```{r}
+new=data.frame(x400m=55.5)
+predict.lm(regModel, newdata=new, interval="prediction")
+```
+
+The model predicted that the athlete would run the 1500m in between (303.32, 331.57) seconds with a high probability.
