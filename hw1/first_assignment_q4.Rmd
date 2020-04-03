@@ -1,0 +1,110 @@
+---
+title: "Fourth Question: Working With Real Data"
+author: "Arnau Abella"
+date: "03/04/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(FactoMineR)
+library(lmtest)
+```
+
+# Decathlon Dataset
+
+It is easy to see from the Variables factor map of the PCA that the points is inversly proportional to the rank i.e. the more points you get
+the lower rank you achieve (lower rank is better)._
+
+From the chart we also see that either the variable has an effect to the rank or to the points, which, at the end of the day, is equivalent. Notice that some results do not have the same impact on the puntuation/rank such as 1500m.
+
+```{r echo = T, results = 'hide'}
+# Load the dataset and preprocess it.
+data(decathlon)
+colnames(decathlon)[c(1,5,6,10)]<-c("x100m","x400m","x110m.hurdle","x1500m")
+colnames(decathlon)
+```
+
+```{r}
+competition <- which(colnames(decathlon) == "Competition")
+plot(decathlon[,-c(competition)])
+# cor(decathlon[,-c(competition)])
+```
+
+\newpage
+
+```{r}
+# Remove the dependent variable score.
+pca<-PCA(decathlon[,-c(competition)])
+```
+
+\newpage
+
+# Principal Component Regression
+
+From the cummulative percentage of variance, we need at least 4 principal components to have an accumulative variance $\geq \frac{2}{3}$.
+
+```{r echo = T, results = 'hide'}
+library(FactoMineR)
+competition <- which(colnames(decathlon) == "Competition")
+
+pca$eig
+plot(pca$eig[,1], type="o", main="Scree Plot")
+summary(pca)
+
+decathlon$PC1<-pca$ind$coord[,1]
+decathlon$PC2<-pca$ind$coord[,2]
+decathlon$PC3<-pca$ind$coord[,3]
+decathlon$PC4<-pca$ind$coord[,4]
+reg_pc<-lm(Points~PC1 + PC2 + PC3 + PC4, data=decathlon)
+```
+
+```{r}
+summary(reg_pc)
+```
+
+## Testing the assumptions of the regression model
+
+- Normality: the error term does follow a normal distribution which is desired.
+- Homogenity: the variance is homogeneous.
+- Independence of errors: the errors do have correlation which may affect the results.
+
+```{r}
+# Normality
+shapiro.test(residuals(reg_pc))
+
+# Homogenity
+plot(residuals(reg_pc))
+bptest(reg_pc)
+
+# Independence of errors
+dwtest(reg_pc, alternative = "two.sided")
+```
+
+## Predicting the points of an athelete using the regression model
+
+Nota bene, the RMSE is small compared to the points scale so we can conclude that the model is accurate "enough".
+
+```{r}
+n <- nrow(decathlon)
+train.sample <- sample(1:n, round(0.67*n))
+
+train.set <- decathlon[train.sample, ]
+test.set <- decathlon[-train.sample, ] 
+
+train.model <- lm(Points ~ PC1+PC2+PC3+PC4 , data = train.set)
+summary(train.model)
+
+yhat<-predict(train.model, test.set, interval="prediction")
+yhat
+y<-test.set$score
+
+error<-cbind(yhat[,1,drop=FALSE],y,(yhat[,1]-y)^2)
+sqr_err<-error[,1]
+sse<-sum(sqr_err)
+
+# Root Mean Square Error = sqrt(SSE/N)
+RMSE<-sqrt(sse/(nrow(test.set)))
+RMSE
+```
