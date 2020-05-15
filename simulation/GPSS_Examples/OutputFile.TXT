@@ -1,0 +1,16 @@
+**** EXPERIMENT MyExperiment() ****
+Replication result: 300
+Replication result: 300
+Replication result: 300
+**** EXPERIMENT MyExperiment() ****
+Replication result: 300
+Replication result: 300
+Replication result: 300
+**** EXPERIMENT MyExperiment() ****
+Replication result: 300
+Replication result: 300
+Replication result: 300
+**** EXPERIMENT MyExperiment() ****
+Replication result: 300
+Replication result: 300
+Replication result: 300
