@@ -10,20 +10,24 @@
 0.5897107 0.2854027 1.9608116 0.6018937 0.2853287 0.6579975 3.9701470 0.8470009 1.5661690 2.2034930 1.9700760
 ```
 
+### Response
 
-          GENERATE         5,2
-          QUEUE            ALM
-          SEIZE            OPER
-          DEPART           ALM
-          SPLIT            1,MED    ;start calibration
-          ADVANCE          3
-MED1      MATCH            MED2     ;wait for calibration
-          ADVANCE          2
-          RELEASE          OPER
-          TERMINATE        1
+factor |   min     |   max     |
+-------|-----------|-----------|
+f1     | 0.000836  | 3.483189  |
+f2     | 0.0000648 | 0.9997571 |
+f4     | 0.00125   | 3.43439   |
+f5     | 0.0001625 | 0.9991915 |
 
-MED       ADVANCE          5,3
-MED2      MATCH            MED1    ;we need to wait for MED1 to be finished before finishing
-          TERMINATE
+Answer = 0.005562 + 1.032*f_1 + 0.988*f_2 + 0.988*f_4 + 4.94*f_5
 
-          ;START           200
+### Validation of exercise 3
+
+Operational Validation: results of the codification of the model
+
+1. Black Box validation
+  - Divide the data set in testing area
+  - Compare this test with the results using ANOVA
+
+2. GPSS Traces - Validation Trace
+  - Go step by step and compare traces
