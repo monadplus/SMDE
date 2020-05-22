@@ -20,14 +20,3 @@ f4     | 0.00125   | 3.43439   |
 f5     | 0.0001625 | 0.9991915 |
 
 Answer = 0.005562 + 1.032*f_1 + 0.988*f_2 + 0.988*f_4 + 4.94*f_5
-
-### Validation of exercise 3
-
-Operational Validation: results of the codification of the model
-
-1. Black Box validation
-  - Divide the data set in testing area
-  - Compare this test with the results using ANOVA
-
-2. GPSS Traces - Validation Trace
-  - Go step by step and compare traces

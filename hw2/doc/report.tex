@@ -1,0 +1,212 @@
+\documentclass[12pt, a4paper]{article} % book, report, article, letter, slides
+                                       % letterpaper/a4paper, 10pt/11pt/12pt, twocolumn/twoside/landscape/draft
+
+%%%%%%%%%%%%%%%% PACKAGES %%%%%%%%%%%%%%%%%%%%%
+
+\usepackage[utf8]{inputenc} % encoding
+
+\usepackage[english]{babel} % use special characters and also translates some elements within the document.
+
+\usepackage{amsmath}        % Math
+\usepackage{amsthm}         % Math, \newtheorem, \proof, etc
+\usepackage{amssymb}        % Math, extended collection
+\usepackage{amsfonts}       % Math, Natural, Integers and so
+\usepackage{bm}             % $\bm{D + C}$
+\newtheorem{theorem}{Theorem}[section]     % \begin{theorem}\label{t:label}  \end{theorem}<Paste>
+\newtheorem{corollary}{Corollary}[theorem]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newenvironment{claim}[1]{\par\noindent\underline{Claim:}\space#1}{}
+\newenvironment{claimproof}[1]{\par\noindent\underline{Proof:}\space#1}{\hfill $\blacksquare$}
+
+\usepackage{hyperref}       % Hyperlinks \url{url} or \href{url}{name}
+
+\usepackage{parskip}        % \par starts on left (not idented)
+
+\usepackage{abstract}       % Abstract
+
+\usepackage{tocbibind}      % Adds the bibliography to the table of contents (automatically)
+
+\usepackage{graphicx}       % Images
+\graphicspath{{./images/}}
+
+\usepackage[vlined,ruled]{algorithm2e} % pseudo-code
+
+% \usepackage[document]{ragged2e}  % Left-aligned (whole document)
+% \begin{...} ... \end{...}   flushleft, flushright, center
+
+%%%%%%%%%%%%%%%% CODE %%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{minted}         % Code listing
+% \mint{html}|<h2>Something <b>here</b></h2>|
+% \inputminted{octave}{BitXorMatrix.m}
+
+%\begin{listing}[H]
+  %\begin{minted}[xleftmargin=20pt,linenos,bgcolor=codegray]{haskell}
+  %\end{minted}
+  %\caption{Example of a listing.}
+  %\label{lst:example} % You can reference it by \ref{lst:example}
+%\end{listing}
+
+\newcommand{\code}[1]{\texttt{#1}} % Define \code{foo.hs} environment
+
+%%%%%%%%%%%%%%%% COLOURS %%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{xcolor}         % Colours \definecolor, \color{codegray}
+\definecolor{codegray}{rgb}{0.9, 0.9, 0.9}
+% \color{codegray} ... ...
+% \textcolor{red}{easily}
+
+%%%%%%%%%%%%%%%% CONFIG %%%%%%%%%%%%%%%%%%%%%
+
+\renewcommand{\absnamepos}{flushleft}
+\setlength{\absleftindent}{0pt}
+\setlength{\absrightindent}{0pt}
+
+%%%%%%%%%%%%%%%% GLOSSARIES & ACRONYMS %%%%%%%%%%%%%%%%%%%%%
+
+%\usepackage{glossaries}
+
+%\makeglossaries % before entries
+
+%\newglossaryentry{latex}{
+    %name=latex,
+    %description={Is a mark up language specially suited
+    %for scientific documents}
+%}
+
+% Referene to a glossary \gls{latex}
+% Print glossaries \printglossaries
+
+\usepackage[acronym]{glossaries} %
+
+% \acrshort{name}
+% \acrfull{name}
+% \newacronym{kcol}{$k$-COL}{$k$-coloring problem}
+
+%%%%%%%%%%%%%%% COMMANDS
+
+\newcommand{\Z}{\mathbb{Z}}
+
+%%%%%%%%%%%%%%%% HEADER %%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Arnau Abella \- MIRI}
+\lhead{Statistical Modelling and Design of Experiments}
+\rfoot{Page \thepage}
+
+%%%%%%%%%%%%%%%% TITLE %%%%%%%%%%%%%%%%%%%%%
+
+\title{%
+  SMDE: Homework 2
+}
+\author{%
+  Arnau Abella \\
+  \large{Universitat Polit\`ecnica de Catalunya}
+}
+\date{\today}
+
+%%%%%%%%%%%%%%%% DOCUMENT %%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\maketitle
+
+%%%%%%%%%% Exercise 1
+
+\section{Simulate your data}
+
+The first exercise can be found on the directory \code{ex1/}.
+
+The generated dataset can be found at \code{ex1/dataset.csv}.
+
+This dataset was generated following the instructions of the exercise. The choosen answer variable is:
+
+\begin{equation}
+  Answer = f_1 + f_2 + f_4 + 5 f_5
+\end{equation}
+
+In order to generate a similar dataset, you only have to run the haskell script \code{./ex1/Main.hs} that I prepared.
+
+Before that, you only need to install \href{https://nixos.org/download.html}{Nix} which will bring all the dependencies to your environment to be able to run the script.
+
+%%%%%%%%%%%%% Exercise 2
+
+\section{Obtain an expression to generate new data}
+
+For exploring the dataset relationships of the different factors I used two techniques:
+
+\begin{itemize}
+  \item Multiple Linear Regression Model.
+  \item Principal Component Analysis.
+\end{itemize}
+
+\newpage
+
+The resulting expression from the MLRM, which is the one I decided to use for the following sections, is
+
+\begin{equation}
+  Answer' = 0.005562 + 1.032f_1 + 0.988f_2 + 0.988f_4 + 4.94f_5
+\end{equation}
+
+which is a very good approximation of the real answer.
+
+There is a dedicated document to this part that can be found at \code{ex2/ex2.pdf}. All material used for that part can also be found at \code{ex2/}
+
+\section{Simulate New Data}
+
+For this part, I used the expression obtained from the \textit{LRM} in the previous section and the framework \textit{GPSS} to simulate the data. All code can be found at \code{ex3/}.
+
+\subsection{Validation of the simulation}
+
+In order to validate we used some operational validation techniques:
+
+\begin{itemize}
+  \item Black Box validation
+
+    We compared the real system data with the simulated data to validate its accuracy. We used \textit{ANOVA} test to validate that they produce equivalent data.
+
+  \item GPSS Traces
+
+    We used the simulation traces to compare the results, and analyze if the logic of the events are coherent with the understanding the experts have of the system.
+\end{itemize}
+
+\subsection{Design of Experiment}
+
+In this section we used the formula from the \textit{LRM} to generate thousands of new records and analyze the interaction of these records with the answer dependent variable. The code for this section can be found at \code{ex4/}.
+
+For this part, I wrote another haskell script \code{./ex4/Main.hs} to run the Yates algorithm on the output of the generated data. The result of Yates can be found at \code{ex4/yates.txt}. The file has the following structure:
+
+\begin{listing}[H]
+  \begin{minted}[xleftmargin=10pt,linenos,bgcolor=codegray]{bash}
+[(+),(+),(+),(-),(-),(-),(+),(+),(+),(+)]  =  7.21245
+[(+),(+),(+),(-),(-),(+),(-),(-),(-),(-)]  =  1.50318
+[(+),(+),(+),(-),(-),(+),(-),(-),(-),(+)]  =  2.503016
+[(+),(+),(+),(-),(-),(+),(-),(-),(+),(-)]  =  2.753091
+[(+),(+),(+),(-),(-),(+),(-),(-),(+),(+)]  =  2.633003
+[(+),(+),(+),(-),(-),(+),(-),(+),(-),(-)]  =  -5.92082
+[(+),(+),(+),(-),(-),(+),(-),(+),(-),(+)]  =  1.74188
+[(+),(+),(+),(-),(-),(+),(-),(+),(+),(-)]  =  1.9131
+[(+),(+),(+),(-),(-),(+),(-),(+),(+),(+)]  =  4.18690
+[(+),(+),(+),(-),(-),(+),(+),(-),(-),(-)]  =  -1.41055
+[(+),(+),(+),(-),(-),(+),(+),(-),(-),(+)]  =  -2.581421
+[(+),(+),(+),(-),(-),(+),(+),(-),(+),(-)]  =  1.66423
+[(+),(+),(+),(-),(-),(+),(+),(-),(+),(+)]  =  2.787
+[(+),(+),(+),(-),(-),(+),(+),(+),(-),(-)]  =  -3.885857
+[(+),(+),(+),(-),(-),(+),(+),(+),(-),(+)]  =  6.29247
+[(+),(+),(+),(-),(-),(+),(+),(+),(+),(-)]  =  -2.425661
+[(+),(+),(+),(-),(-),(+),(+),(+),(+),(+)]  =  -1.2188
+[(+),(+),(+),(-),(+),(-),(-),(-),(-),(-)]  =  1.074661
+[(+),(+),(+),(-),(+),(-),(-),(-),(-),(+)]  =  -1.301479
+[(+),(+),(+),(-),(+),(-),(-),(-),(+),(-)]  =  1.223755
+[(+),(+),(+),(-),(+),(-),(-),(-),(+),(+)]  =  -5.17829
+  \end{minted}
+  \caption{\textit{head} of \code{ex4/yates.txt}}
+\end{listing}
+
+The file contains 1024 so it is time consuming to analyze by hand. I made a small script to get the most significant factors. As expected, the factors are consistent with the experiment results.
+
+\end{document}
