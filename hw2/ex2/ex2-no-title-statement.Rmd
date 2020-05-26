@@ -1,7 +1,4 @@
 ---
-title: "Exercise 2. Obtain an expression to simulate new data"
-author: "Arnau Abella"
-date: "21/05/2020"
 output: pdf_document
 ---
 
@@ -11,25 +8,11 @@ knitr::opts_chunk$set(echo = TRUE)
 library(lmtest)
 library(FactoMineR)
 
-path <- "/home/arnau/MIRI/SMDE/hw2"
-dataset <- read.csv(paste(path, "ex1/dataset.csv", sep="/"),header=TRUE,sep=",")
+dataset <- read.csv("../ex1/dataset.csv",header=TRUE,sep=",")
 answer <- which(colnames(dataset) == "answer")
 ```
 
-Image that you don't know anything regarding this dataset. You need to explore it because you want to define a model to obtain new data for your DOE (you want to detect the possible relations and the interactions between the factors, or maybe you want to test alternatives or predict future scenarios).
-
-1. Explore the possible relations of all the factors and answer variable, you can use any technique developed during the course.
-
-2. Describe what you find on this analysis and, explain if it is coherent with the knowledge you have from the data.
-
-3. Propose an expression (as an example using a LRM) to understand the relations between the data. What are the factors that affects the answer?
-
-In order to answer these three questions we are going to use the following techniques:
-
-- Multiple Linear Regression Model
-- Principal Component Analysis
-
-## Multiple Linear Regression Model
+# 2.1 Multiple Linear Regression Model
 
 Let's start by applying a *multiple linear regression model* to the generated dataset from the first exercise:
 
@@ -54,7 +37,9 @@ reg_model3<-lm(answer~factor1+factor2+factor3+factor4+factor5, data=dataset)
 summary(reg_model3)
 ```
 
-## Testing Regression Assumptions
+\newpage
+
+# 2.2 Testing Regression Assumptions
 
 ```{r}
 ### 1. Normality of the Error Term
@@ -81,7 +66,7 @@ dwtest(reg_model3, alternative = "two.sided")
 
 \newpage
 
-## Principal Component Analysis
+# 2.3 Principal Component Analysis
 
 Let's use **Principal Component Analysis** technique to analyze the dataset and its factors and extract an expression to predict an answer:
 
@@ -109,7 +94,7 @@ summary(reg_pc)
 
 This expression can be used to predict the answer variable.
 
-## Testing PCA Assumptions
+# 2.4 Testing PCA Assumptions
 
 ```{r}
 #1. Normality

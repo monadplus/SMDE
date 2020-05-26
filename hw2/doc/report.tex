@@ -36,8 +36,12 @@
 % \usepackage[document]{ragged2e}  % Left-aligned (whole document)
 % \begin{...} ... \end{...}   flushleft, flushright, center
 
+\usepackage{pdfpages}
+
 %%%%%%%%%%%%%%%% CODE %%%%%%%%%%%%%%%%%%%%%
 
+%\usepackage{caption}
+\usepackage{listings}
 \usepackage{minted}         % Code listing
 % \mint{html}|<h2>Something <b>here</b></h2>|
 % \inputminted{octave}{BitXorMatrix.m}
@@ -95,7 +99,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{Arnau Abella \- MIRI}
-\lhead{Statistical Modelling and Design of Experiments}
+\lhead{SMDE}
 \rfoot{Page \thepage}
 
 %%%%%%%%%%%%%%%% TITLE %%%%%%%%%%%%%%%%%%%%%
@@ -119,94 +123,135 @@
 
 \section{Simulate your data}
 
-The first exercise can be found on the directory \code{ex1/}.
-
-The generated dataset can be found at \code{ex1/dataset.csv}.
-
-This dataset was generated following the instructions of the exercise. The choosen answer variable is:
+The choosen answer variable is:
 
 \begin{equation}
   Answer = f_1 + f_2 + f_4 + 5 f_5
 \end{equation}
 
-In order to generate a similar dataset, you only have to run the haskell script \code{./ex1/Main.hs} that I prepared.
+The generated system can be found at \code{ex1/dataset.csv}.
 
-Before that, you only need to install \href{https://nixos.org/download.html}{Nix} which will bring all the dependencies to your environment to be able to run the script.
+In order to generate a new dataset, you only need to run the script \code{./ex1/Main.hs} that I specifically prepared to simplify this task. Before that, you need to install \href{https://nixos.org/download.html}{Nix} which will bring all the dependencies to your environment to be able to run the script.
+
+In the following pages you will find the source code of this script \ref{listing:1}. The script was written in \textit{Haskell} but it should be easy to follow (modulo some language-specific details).
+
+\newpage
+
+\inputminted{haskell}{../ex1/Main.hs}\label{listing:1}
+%\captionof{listing}{Script used to generate the system dataset}
 
 %%%%%%%%%%%%% Exercise 2
 
 \section{Obtain an expression to generate new data}
 
-For exploring the dataset relationships of the different factors I used two techniques:
+The following two techniques have been used for exploring the dataset's interactions of the different factors:
 
 \begin{itemize}
   \item Multiple Linear Regression Model.
   \item Principal Component Analysis.
 \end{itemize}
 
-\newpage
-
-The resulting expression from the MLRM, which is the one I decided to use for the following sections, is
+The resulting expression from the \textit{LRM} is
 
 \begin{equation}
   Answer' = 0.005562 + 1.032f_1 + 0.988f_2 + 0.988f_4 + 4.94f_5
 \end{equation}
 
-which is a very good approximation of the real answer.
+which is a very good approximation of the system answer as we will see later.
 
-There is a dedicated document to this part that can be found at \code{ex2/ex2.pdf}. All material used for that part can also be found at \code{ex2/}
+In the following pages include the scripts, observations and validations of the dataset and its resulting modelling expression.
+
+\includepdf[pages={1-}]{../ex2/ex2-no-title-statement.pdf}
+
+%%%%%%%%%%%%% Exercise 3
 
 \section{Simulate New Data}
 
-For this part, I used the expression obtained from the \textit{LRM} in the previous section and the framework \textit{GPSS} to simulate the data. All code can be found at \code{ex3/}.
+For this part, we will use the expression obtained from the \textit{LRM} in the previous section and the framework \textit{GPSS} to simulate the data. Here is an snippet \ref{listing:3} of the GPSS code used to generate the model data. The rest of the scripts can be found on the directory \code{ex3/}.
+
+\bigbreak
+
+\begin{lstlisting}[caption={GPSS script to simulate data}, captionpos=b]
+; factor |   min     |   max     |
+; -------|-----------|-----------|
+; f1     | 0.000836  | 3.483189  |
+; f2     | 0.0000648 | 0.9997571 |
+; f4     | 0.00125   | 3.43439   |
+; f5     | 0.0001625 | 0.9991915 |
+
+; f1 -
+; f2 -
+; f4 -
+; f5 -
+
+; Answer = 0.005562 + 1.032*f_1 + 0.988*f_2 + 0.988*f_4 + 4.94*f_5
+
+GENERATE 1
+ADVANCE  (1.032 # 0.000836  + DUNIFORM(RN1, 0, 1)) ;Factor 1
+ADVANCE  (0.988 # 0.0000648 + DUNIFORM(RN1, 0, 1)) ;Factor 2
+ADVANCE  (0.988 # 0.00125   + DUNIFORM(RN1, 0, 1)) ;Factor 4
+ADVANCE  (4.94  # 0.0001625 + DUNIFORM(RN1, 0, 1)) ;Factor 5
+TERMINATE 1
+\end{lstlisting}
+\label{listing:3}
+
+Apart from the previous code, I used included an script to do the replication for the experimental design.
 
 \subsection{Validation of the simulation}
 
-In order to validate we used some operational validation techniques:
+In order to validate we used some operational validation techniques:\\
 
 \begin{itemize}
-  \item Black Box validation
+  \item \textbf{Black Box validation}: we compared the real system data with the simulated data to validate its accuracy. We used \textit{Student's t-test} to validate that the model produced from the \textit{LRM} is accurated with respect to the real system. Formaly, \textit{Student's t-test} null hypothesis is that there is no statistical difference between the mean of the given two population.
 
-    We compared the real system data with the simulated data to validate its accuracy. We used \textit{ANOVA} test to validate that they produce equivalent data.
-
-  \item GPSS Traces
-
-    We used the simulation traces to compare the results, and analyze if the logic of the events are coherent with the understanding the experts have of the system.
+  \item \textbf{GPSS Traces}: we used the simulation traces to compare the results, and analyze if the logic of the events are coherent with the understanding the experts have of the system. \\
 \end{itemize}
 
-\subsection{Design of Experiment}
+We used the following \textit{R} script \ref{listing:2} for the \textit{Black Box validation} by the \textit{Student's t-test}. The resulting $p-value = 0.08 \geq \alpha = 0.05$. So we can accept the null hypothesis that is that the populations have the same mean. Hence, our model is a good approximation of the reality.
 
-In this section we used the formula from the \textit{LRM} to generate thousands of new records and analyze the interaction of these records with the answer dependent variable. The code for this section can be found at \code{ex4/}.
-
-For this part, I wrote another haskell script \code{./ex4/Main.hs} to run the Yates algorithm on the output of the generated data. The result of Yates can be found at \code{ex4/yates.txt}. The file has the following structure:
-
-\begin{listing}[H]
-  \begin{minted}[xleftmargin=10pt,linenos,bgcolor=codegray]{bash}
-[(+),(+),(+),(-),(-),(-),(+),(+),(+),(+)]  =  7.21245
-[(+),(+),(+),(-),(-),(+),(-),(-),(-),(-)]  =  1.50318
-[(+),(+),(+),(-),(-),(+),(-),(-),(-),(+)]  =  2.503016
-[(+),(+),(+),(-),(-),(+),(-),(-),(+),(-)]  =  2.753091
-[(+),(+),(+),(-),(-),(+),(-),(-),(+),(+)]  =  2.633003
-[(+),(+),(+),(-),(-),(+),(-),(+),(-),(-)]  =  -5.92082
-[(+),(+),(+),(-),(-),(+),(-),(+),(-),(+)]  =  1.74188
-[(+),(+),(+),(-),(-),(+),(-),(+),(+),(-)]  =  1.9131
-[(+),(+),(+),(-),(-),(+),(-),(+),(+),(+)]  =  4.18690
-[(+),(+),(+),(-),(-),(+),(+),(-),(-),(-)]  =  -1.41055
-[(+),(+),(+),(-),(-),(+),(+),(-),(-),(+)]  =  -2.581421
-[(+),(+),(+),(-),(-),(+),(+),(-),(+),(-)]  =  1.66423
-[(+),(+),(+),(-),(-),(+),(+),(-),(+),(+)]  =  2.787
-[(+),(+),(+),(-),(-),(+),(+),(+),(-),(-)]  =  -3.885857
-[(+),(+),(+),(-),(-),(+),(+),(+),(-),(+)]  =  6.29247
-[(+),(+),(+),(-),(-),(+),(+),(+),(+),(-)]  =  -2.425661
-[(+),(+),(+),(-),(-),(+),(+),(+),(+),(+)]  =  -1.2188
-[(+),(+),(+),(-),(+),(-),(-),(-),(-),(-)]  =  1.074661
-[(+),(+),(+),(-),(+),(-),(-),(-),(-),(+)]  =  -1.301479
-[(+),(+),(+),(-),(+),(-),(-),(-),(+),(-)]  =  1.223755
-[(+),(+),(+),(-),(+),(-),(-),(-),(+),(+)]  =  -5.17829
-  \end{minted}
-  \caption{\textit{head} of \code{ex4/yates.txt}}
+\begin{listing}[ht]
+  \inputminted[fontsize=\footnotesize]{r}{../ex3/validation.R}
+  \caption{Validation script}
+\label{listing:2}
 \end{listing}
 
-The file contains 1024 so it is time consuming to analyze by hand. I made a small script to get the most significant factors. As expected, the factors are consistent with the experiment results.
+%%%%%%%%%%%%% Exercise 4
+
+\section{Design of Experiment}
+
+In this section we will use the previously generated model data and analyze the interaction of these records with the answer dependent variable. The code for this section can be found at \code{ex4/}.
+
+For this part, I wrote another haskell script (see Appendix \ref{s:appendix}) to run the Yates algorithm on the output of the generated data.
+
+The result of Yates can be found at \code{ex4/yates.txt}. The file contains 1024 interactions so it is time consuming to analyze by hand. I made a small script to get the most significant factors. As expected, the factors are consistent with the experiment results (see listing \ref{listing:2}).
+
+\begin{listing}[ht]
+  \inputminted[fontsize=\footnotesize]{r}{../ex4/yates_single_factor.txt}
+  \caption{Single factors from \code{ex4/yates.txt}}
+\label{listing:2}
+\end{listing}
+
+We finish our experimental design by analyzing the results of the factorial experiment. The main factors of our model are:
+
+\begin{itemize}
+  \item Factor 1
+  \item Factor 2
+  \item Factor 4
+  \item Factor 5
+  \item Combinations of the previous ones.
+\end{itemize}
+
+that are the ones that we used to generate our system answer. \textbf{So, we can conclude that our model is an accurate representation of the reality}.
+
+
+%%%%%%%%%%%%%%%% Appendix %%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\section*{Appendix}\label{s:appendix}
+
+\subsection*{Yates implementation in Haskell}%
+\label{sub:Yates implementation in Haskell}
+
+\inputminted{haskell}{../ex4/Main.hs}\label{listing:4}
 
 \end{document}

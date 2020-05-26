@@ -2,7 +2,8 @@
 # Homework 2: Exercise 2
 ################################################ 
 
-dataset <- read.csv("/home/arnau/MIRI/SMDE/hw2/ex1/dataset.csv",header=TRUE,sep=",")
+path <- "/home/arnau/MIRI/SMDE/hw2"
+dataset <- read.csv(paste(path, "ex1/dataset.csv", sep="/"),header=TRUE,sep=",")
 plot(dataset)
 
 ## Correlation among Independent Variables

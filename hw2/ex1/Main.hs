@@ -51,4 +51,6 @@ generateDataset n = do
   return (x : xs)
 
 main :: IO ()
-main = (writeFile "dataset.csv" . encodeDefaultOrderedByName) =<< generateDataset 2000
+main =
+  generateDataset 2000
+    >>= writeFile "dataset.csv" . encodeDefaultOrderedByName
